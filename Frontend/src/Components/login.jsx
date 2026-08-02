@@ -35,29 +35,22 @@ const LogInForm = ({ setShowRegister }) => {
         }
 
         if (res.ok) {
-            // localStorage.setItem("LoggedUSER", JSON.stringify(LoggedUser.user));
-            // localStorage.setItem("Token", JSON.stringify(LoggedUser.token));
-
-            console.log("loggedUser =", LoggedUser);
-            // console.log("loggedUser._id =", LoggedUser.user._id);
-            toast.success('User Logged In Successfully !');
-            navigate(`/dashboard/${LoggedUser.user._id}`);
+            toast.success('Otp Sent Successfully !');
+            navigate("/verify-otp", {
+                state: {
+                    email: form.email,
+                    purpose: "login"
+                }
+            });
         }
-
-        // res.cookie("LoggedUser", JSON.stringify(LoggedUser));
 
     }
 
 
     return (
 
-        <div
-            className="max-w-7xl  h-full flex justify-center items-center bg-cover bg-center"
-            style={{
-                background:
-                    "linear-gradient(135deg, #06141B 0%, #11212D 30%, #253745 100%)",
-            }}
-        >
+        <div className="max-w-7xl  h-full flex justify-center items-center bg-cover bg-center 
+bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 " >
             <div className="text-center ">
                 <h1
                     className="sm:text-4xl text-2xl  font-bold mt-20 mb-7  text-cyan-300"
@@ -142,23 +135,13 @@ const LogInForm = ({ setShowRegister }) => {
                     <button
                         type="button"
                         onClick={handleLogin}
-                        className="
-          w-full
-          py-3
-          rounded-xl
-          font-semibold
-          text-slate-900
-          bg-cyan-400
-          hover:bg-cyan-300
-          transition-all
-          duration-300
-          shadow-[0_0_20px_rgba(34,211,238,0.6)]
-        "
+                        className="w-full py-3 rounded-xl font-semibold text-slate-900  bg-cyan-400 hover:bg-cyan-300 transition-all duration-300shadow-[0_0_20px_rgba(34,211,238,0.6)] hover:scale-105 sm:text-lg text-sm cursor-pointer "
                     >
                         LogIn
                     </button>
                     <p className="text-cyan-400 mt-4">New User ?&nbsp;&nbsp;
-                        <button type="button" className="underline cursor-pointer" onClick={() => navigate('/register')}>Register Here</button></p>
+                        <button type="button" className="underline cursor-pointer"
+                            onClick={() => navigate('/register')}>Register Here</button></p>
                 </form>
             </div>
         </div>

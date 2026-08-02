@@ -201,7 +201,7 @@ const dashboard = () => {
         if (res.ok) {
             // localStorage.removeItem("LoggedUSER");
             // alert(' User LogOUT Successfully')
-            toast.success('Logged Out Successfull ');
+            toast.success('Logged Out Successfully ');
             navigate('/Login')
         }
 
@@ -229,7 +229,7 @@ const dashboard = () => {
 
                 <p className="sm:text-2xl  text-cyan-900  ">Your Personal Password Manager</p>
 
-                <button onClick={Userprofile} className='bg-cyan-400 text-slate-900 p-2  mx-3 font-bold  rounded-full cursor-pointer  hover:bg-cyan-600 h-10'>
+                <button onClick={Userprofile} className='bg-cyan-400 text-slate-900 p-2  mx-3 font-bold  rounded-full cursor-pointer  hover:bg-cyan-600 h-10 hover:scale-150 transition duration-300 ease-in-out sm:text-lg text-sm '>
                     👤
                 </button>
 
@@ -301,7 +301,7 @@ const dashboard = () => {
                 </div>
                 <button
                     onClick={SaveNow}
-                    className="border-black cursor-pointer  rounded-lg p-3.5 m-2 bg-cyan-500  text-indigo-900 font-bold hover:bg-cyan-600 focus:outline-none focus:ring-3 focus:ring-cyan-900 "
+                    className="border-black cursor-pointer  rounded-lg p-3.5 m-2 bg-cyan-500  text-indigo-900 font-bold hover:bg-cyan-600 focus:outline-none focus:ring-3 focus:ring-cyan-900 hover:scale-105 transition duration-300 ease-in-out  "
                 >
                     Add Password
                 </button>
@@ -319,7 +319,7 @@ const dashboard = () => {
 
                     <button
                         onClick={hadleReset}
-                        className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-xl w-full max-w-50 sm:w-auto transition cursor-pointer"
+                        className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-xl w-full max-w-50 sm:w-auto transition cursor-pointer hover:scale-105 transition duration-300 ease-in-out"
                     >
                         Delete ALL
                     </button>

@@ -23,7 +23,8 @@ const Home = () => {
 
                 <button
                     onClick={() => navigate('/register')}
-                    className="px-8 py-3 rounded-xl bg-cyan-400 text-slate-900 font-semibold hover:bg-cyan-300"
+                    className="px-8 py-3 rounded-xl bg-cyan-400 text-slate-900 font-semibold hover:bg-cyan-300 
+                    hover:scale-105 transition-transform duration-300 sm:text-lg text-sm cursor-pointer"
                 >
                     Get Started
                 </button>

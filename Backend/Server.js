@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const CryptoJS = require("crypto-js");
-
+const sendOtp = require('./sendotp.js');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -35,9 +35,6 @@ async function main() {
     // Use connect method to connect to the server
     await client.connect();
     console.log('Connected successfully to server');
-
-    // the following code examples can be pasted here...
-
     return 'done.';
 }
 
@@ -97,7 +94,6 @@ const auth = async (req, res, next) => {
 
 // const LoggeduserID = req.headers.loggeduserid; 
 app.get('/ShowPasswords', auth, async (req, res) => {
-    await client.connect();
     const passwords = await collection.find({ userId: new ObjectId(req.user._id) }).toArray();
 
     const decrypted = passwords.map(item => {
@@ -192,38 +188,75 @@ app.put('/edit_password/:id', auth, async (req, res) => {
     res.json(updated);
     console.log("Edit Successfuly (Id) =>", id);
     // console.log(" Edit SuccessFullyUpdated :", updated);
-    
+
 });
 
 app.post('/register', async (req, res) => {
 
     const { password, name, email } = req.body;
-    const dbName = 'PassManager';
-    const db = client.db(dbName);
+    //First Connect to Users Collection In DB
     const collection = db.collection('Users');
-    await client.connect();
-
 
     const isUserAlreadyExist = await collection.findOne({ email });
-    if (isUserAlreadyExist) {
+
+    if (isUserAlreadyExist && isUserAlreadyExist.verified) {
         return res.status(409).json({ message: 'This EMAIL Already Exists !!!' })
     }
 
     const hashedPass = await bcrypt.hash(password, 10);
     // console.log("Converted into ->", hashedPass);
-    const val = await collection.insertOne({ name, email, password: hashedPass });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    console.log("Registration OTP Generated :", otp);
+
+    if (isUserAlreadyExist && !isUserAlreadyExist.verified) {
+        // return res.status(409).json({ message: "Email already registered."   });
+        //This is the Case When A User Usees Same Email To Register But That is'nt Verified
+        await collection.findOneAndUpdate({ email }, {
+            $set: {
+                name,
+                password: hashedPass,
+                verified: false,
+                Otp: otp,
+                OtpExpires: expiresAt,
+                Otp_Purpose: "register",
+                resendAllowedAt: new Date(Date.now() + 30000)
+            }
+        }, { returnDocument: 'after' }
+        );
+        return res.status(200).json({ message: "OTP Sent Successfully" });
+    }
+
+    const val = await collection.insertOne({
+        name, email,
+        password: hashedPass,
+        verified: false,
+        Otp: otp,
+        OtpExpires: expiresAt,
+        Otp_Purpose: "register",
+        resendAllowedAt: new Date(Date.now() + 30000),  //for 30 seconds
+        createdAt: new Date()  
+    });
 
     const token = jwt.sign({ _id: val._id }, SECRET, { expiresIn: '24h' })
     console.log("User Registered Successfully:", val);
     res.json({ user: val, token });
-})
+
+    sendOtp(email, otp)
+        .then(() => console.log("Registration OTP Sent"))
+        .catch(err => console.error("Failed to send Sent Registration OTP:", err));
+
+});
+
+
 
 app.post('/Login', async (req, res) => {
     const { email, password } = req.body;
     const dbName = 'PassManager';
     const db = client.db(dbName);
     const collection = db.collection('Users');
-    await client.connect();
+    // await client.connect();
 
     const user = await collection.findOne({ email });
     // console.log(user);
@@ -237,29 +270,192 @@ app.post('/Login', async (req, res) => {
         console.log("Incorrect Password");
     }
 
-    const token = jwt.sign({ _id: user._id }, SECRET, { expiresIn: '24h' })
-    // console.log("Token  :",token );
+    if (!user.verified) {
+        return res.status(403).json({
+            message: "Please verify your email before logging in."
+        });
+    }
 
-    // res.cookie('Token', token);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    console.log("Login OTP Generated :", otp);
+
+    await collection.updateOne({ _id: user._id }, {
+        $set: {
+            Otp: otp,
+            OtpExpires: expiresAt,
+            Otp_Purpose: "login",
+            resendAllowedAt: new Date(Date.now() + 30000)  //for 30 seconds
+        }
+    });
+    //res.json line must be here for immediate Redirextion of user to verify OTP page after sending OTP to user email
+    res.json({ message: "OTP sent successfully" });
+
+    //    console.time("Send OTP");
+    // await sendOtp(email, otp); Do'nt use this after sending the response
+    // console.timeEnd("Send OTP");
+    sendOtp(email, otp)
+        .then(() => console.log("OTP Sent"))
+        .catch(err => console.error("Failed to send resent OTP:", err));
+
+
+});
+
+
+
+app.post('/verify-Login', async (req, res) => {
+
+    const collection = db.collection('Users');
+
+    const { email } = req.body;
+
+    // console.log("Fetch to /verify-Login Request Hiting properly")
+
+    const user = await collection.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.Otp !== req.body.otp) {
+        return res.status(401).json({ message: "Invalid OTP" });
+    }
+
+    if (new Date() > user.OtpExpires) {
+        return res.status(401).json({ message: "OTP Expired" });
+    }
+    // After successful verification
+    // Always remove the OTP so it cannot be reused:
+    await collection.findOneAndUpdate({ _id: user._id }, {
+        $unset: {
+            Otp: "",
+            OtpExpires: "",
+            Otp_Purpose: "",
+            resendAllowedAt: ""
+        }
+    }, { returnDocument: 'after' });
+
+    // Generate a new token for the user after successful OTP verification
+    const token = jwt.sign({ _id: user._id }, SECRET, { expiresIn: '24h' })
+    console.log("Token  :", token);
+
     res.cookie("Token", token, {
         httpOnly: true,
         secure: false,      // true when using HTTPS in production
         sameSite: "lax",    // or "none" if frontend/backend are on different domains over HTTPS
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
-    // res.cookie("LoggedUser", JSON.stringify(user));
+
     console.log("Logged In Successfully", user)
     res.status(200).json({ message: "Logged In Successfully", user });
 
-
 })
+
+app.post('/resend-otp', async (req, res) => {
+
+    const collection = db.collection('Users');
+
+    const { email } = req.body;
+    const user = await collection.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ message: "If the Account exists, an OTP has been sent." });
+    }
+
+
+    console.log("Now:", new Date());
+    console.log("Allowed:", user.resendAllowedAt);
+    console.log("Blocked:", new Date() < user.resendAllowedAt);
+
+    if (user.resendAllowedAt && new Date() < user.resendAllowedAt) {
+
+        const secondsLeft = Math.ceil(
+            (user.resendAllowedAt - new Date()) / 1000
+        );
+        return res.status(429).json({
+            message: `Please wait ${secondsLeft} seconds before requesting another OTP.`,
+            secondsLeft
+        });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    console.log("OTP Generated :", otp);
+
+    await collection.updateOne({ _id: user._id }, {
+        $set: {
+            Otp: otp,
+            OtpExpires: expiresAt,
+            Otp_Purpose: "login",
+            resendAllowedAt: new Date(Date.now() + 30000) //for 30 seconds
+        }
+    });
+
+    res.json({ message: "OTP Resent successfully" });
+
+    sendOtp(email, otp)
+        .then(() => console.log("OTP Resent"))
+        .catch(err => console.error("Failed to send resent OTP:", err));
+
+});
+
+
+app.post('/verify-register', async (req, res) => {
+
+    const collection = db.collection('Users');
+
+    const { email } = req.body;
+    console.log("Email :", email);
+    const user = await collection.findOne({ email });
+    console.log("User :", user);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user && !user.verified) {
+        await collection.findOneAndUpdate({ _id: user._id }, {
+            $set: {
+                verified: true
+            },
+            $unset: {
+                Otp: "",
+
+            }
+        }, { returnDocument: 'after' }
+        );
+
+        return res.status(200).json({ message: "User Verified Successfully" });
+    }
+
+    if (user.Otp !== req.body.otp) {
+        return res.status(401).json({ message: "Invalid OTP" });
+    }
+    if (new Date() > user.OtpExpires) {
+        return res.status(401).json({ message: "OTP Expired" });
+    }
+
+    await collection.findOneAndUpdate({ _id: user._id },
+        {
+            $set: {
+                verified: true
+            },
+            $unset: {
+                Otp: "",
+                OtpExpires: "",
+                Otp_Purpose: "",
+                resendAllowedAt: ""
+            }
+        }, { returnDocument: 'after' }
+    );
+    res.status(200).json({ message: "User Verified Successfully" });
+
+});
+
 
 app.get('/Profile', auth, async (req, res) => {
 
     const dbName = 'PassManager';
     const db = client.db(dbName);
     const collection = db.collection('Users');
-    await client.connect();
+    // await client.connect();
     const USER = await collection.findOne({
         _id: new ObjectId(req.user._id)
     })
@@ -271,7 +467,7 @@ app.get('/LogOut', auth, async (req, res) => {
 
     res.clearCookie('Token');
     res.status(200).json({ message: 'User Logged Out Successfully' });
-    console.log('User Logged Out Successfull');
+    console.log('User Logged Out Successfully');
 
 })
 

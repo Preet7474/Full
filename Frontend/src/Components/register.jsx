@@ -52,25 +52,29 @@ const RegisterForm = ({ setShowRegister }) => {
 
         // console.log(data.message);
         if (!res.ok) {
-            alert(data.message);
+            // alert(data.message);
             toast.error(data.message)
             return;
         }
-        // alert("Registration Successful!");
         toast.success(" User Registration Successfull ")
-        // console.log(data)
+
+        // console.log("Email :", form.email);
+        
+        navigate("/verify-otp", {
+            state: {
+                email: form.email,
+                purpose: "register"
+            }
+        });
+
         setform({ email: "", name: "", password: "" });
-        navigate("/Login");
+
+        // navigate("/Login");
     }
     return (
 
-        <div
-            className="max-w-7xl  h-full flex justify-center items-center bg-cover bg-center"
-            style={{
-                background:
-                    "linear-gradient(135deg, #06141B 0%, #11212D 40%, #253745 100%)",
-            }}
-        >
+        <div className="max-w-7xl  h-full flex justify-center items-center bg-cover bg-center
+            bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900" >
             <div className="text-center">
                 <h1
                     className="sm:text-4xl text-2xl font-bold mt-16 mb-6 text-cyan-300"
@@ -163,18 +167,7 @@ const RegisterForm = ({ setShowRegister }) => {
                     <button
                         type="button"
                         onClick={handleRegistration}
-                        className="
-          w-full
-          py-3
-          rounded-xl
-          font-semibold
-          text-slate-900
-          bg-cyan-400
-          hover:bg-cyan-300
-          transition-all
-          duration-300
-          shadow-[0_0_20px_rgba(34,211,238,0.6)]
-        "
+                        className="w-full py-3 rounded-xl font-semibold text-slate-900 bg-cyan-400 hover:bg-cyan-300 transition-all duration-300 shadow-[0_0_20px_rgba(34,211,238,0.6)] hover:scale-105 sm:text-lg text-sm cursor-pointer "
                     >
                         Register
                     </button>
