@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "name": "mern_passmanager",
+  "version": "1.0.0",
+  "description": "EpicPass-Manager is a full-stack password manager built with React on the frontend and Node.js, Express, and MongoDB on the backend. It also includes OTP-based email verification for both registration and login, making the authentication flow more secure.",
+  "main": "eslint.config.js",
+  "scripts": {
+    "frontend": "npm --prefix Frontend run dev",
+    "backend": "npm --prefix Backend run dev",
+    "dev": "concurrently \"npm --prefix Backend run dev\" \"npm --prefix Frontend run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Preet7474/Full.git"
+  },
+
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Preet7474/Full/issues"
+  },
+  "homepage": "https://github.com/Preet7474/Full#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}

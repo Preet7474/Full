@@ -58,6 +58,7 @@ EpicPass-Manager is a full-stack password manager built with React on the fronte
 Install frontend dependencies:
 
 ```bash
+cd Frontend
 npm install
 ```
 
@@ -93,6 +94,22 @@ npm start
 
 Start the frontend development server:
 
+```bash
+cd Frontend
+npm run dev
+```
+
+For Starting directly from ROOT Folder:
+
+### Frontend
+```bash
+npm run frontend
+```
+### Backend
+```bash
+npm run backend
+```
+#### Run Both Together
 ```bash
 npm run dev
 ```
