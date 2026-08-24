@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 4000;
+const PORT = process.env.PORT || 4000;
 const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -551,7 +551,7 @@ app.get('/LogOut', auth, async (req, res) => {
 })
 
 
-app.listen(port, () => {
+app.listen(PORT, () => {
 
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
