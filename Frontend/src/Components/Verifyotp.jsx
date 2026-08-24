@@ -65,7 +65,7 @@ const Verifyotp = () => {
         }
 
         if (purpose === "login" && res.ok) {
-            // console.log("loggedUser =", data.user);
+            console.log("loggedUser =", data.user);
             toast.success('User Logged In Successfully !');
             navigate(`/dashboard/${data.user._id}`);
         }

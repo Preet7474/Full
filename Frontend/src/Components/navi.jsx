@@ -4,7 +4,7 @@ const NavBarr = () => {
 
   // bg-cyan-500  text-white
   return (
-    <nav className="fixed top-0 z-10 w-full h-16 bg-slate-900 border-b border-cyan-500/20">
+    <nav className="fixed top-0 z-10 w-full h-16 bg-slate-900 border-b border-cyan-500/20 select-none">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-8 flex items-center justify-between">
 
         {/* Logo */}

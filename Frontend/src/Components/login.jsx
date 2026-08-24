@@ -49,11 +49,11 @@ const LogInForm = ({ setShowRegister }) => {
 
     return (
 
-        <div className="max-w-7xl  h-full flex justify-center items-center bg-cover bg-center 
-bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 " >
+        <div className="max-w-8xl  h-full flex justify-center items-center bg-cover bg-center 
+bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 select-none" >
             <div className="text-center ">
                 <h1
-                    className="sm:text-4xl text-2xl  font-bold mt-20 mb-7  text-cyan-300"
+                    className="sm:text-4xl text-2xl  font-bold mt-29 mb-7  text-cyan-300"
                     style={{
                         textShadow: "0 0 10px #22d3ee, 0 0 20px #06b6d4",
                     }}
@@ -69,7 +69,7 @@ bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 " >
         border
         border-cyan-400/30
         rounded-3xl
-        sm:p-6 p-9
+        sm:p-6 px-10 py-3
         shadow-[0_0_25px_rgba(34,211,238,0.4)]
       "  >
 

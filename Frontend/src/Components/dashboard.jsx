@@ -6,14 +6,17 @@ import { toast, Bounce } from "react-toastify";
 const dashboard = () => {
 
     const [toggle, settoggle] = useState(false);
-    const ref = useRef();
     const [PasswordArray, setPasswordArray] = useState([]);
     const [form, setform] = useState({ site: "", name: "", password: "" });
+    const inputRef = useRef(null);
     const [editId, setEditId] = useState(null);
     const navigate = useNavigate();
     // const user = JSON.parse(localStorage.getItem("LoggedUSER"));  //the user who logged in 
     const [showProfile, setShowProfile] = useState(false);
     const [user, setUser] = useState(null);
+    const [revealedPass, setRevealedPass] = useState(null)
+    const [revealedId, setRevealedId] = useState(null)
+
     // const token = JSON.parse(localStorage.getItem("Token")); //Always Parse the token
 
     // const Loggeduser = req.cookies.LoggedUser || req.headers.authorization.split(' ')[1];
@@ -28,6 +31,17 @@ const dashboard = () => {
         // const user = JSON.parse(localStorage.getItem("LoggedUSER"));
 
     }, []);
+
+    useEffect(() => {
+        if (editId) {
+            inputRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+            inputRef.current?.focus();
+        }
+    }, [editId]);
 
 
     const fetchPass = async () => {
@@ -70,8 +84,8 @@ const dashboard = () => {
         const existingEntry = PasswordArray.find(
             (i) =>
                 i.site.trim().toLowerCase() === form.site.trim().toLowerCase() &&
-                i.name.trim().toLowerCase() === form.name.trim().toLowerCase() &&   
-                i._id !== editId 
+                i.name.trim().toLowerCase() === form.name.trim().toLowerCase() &&
+                i._id !== editId
         );
 
         if (existingEntry) {
@@ -144,6 +158,7 @@ const dashboard = () => {
         if (value) {
             setform(value);
             setEditId(id);
+
         }
     };
 
@@ -220,8 +235,50 @@ const dashboard = () => {
 
     };
 
+    const revealPass = async (id) => {
+        // settoggle(!toggle)
+
+        // If this password is already revealed,then hide it
+        if (revealedId === id) {
+            setRevealedId(null);
+            setRevealedPass(null);
+            return;
+        }
+        const res = await fetch(`http://localhost:4000/password/${id}/reveal`, {
+            method: "GET",
+            credentials: "include"
+        })
+        const data = await res.json();
+
+        if (!res.ok) {
+            console.error(data.message);
+            return;
+        }
+        setRevealedId(id);
+        setRevealedPass(data.password);
+
+    };
+
+    const copyPass = async (id) => {
+        const res = await fetch(
+            `http://localhost:4000/password/${id}/reveal`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+        const data = await res.json();
+        if (!res.ok) {
+            toast.error(data.message || "Unable to Retrieve password");
+            return;
+        }
+        await navigator.clipboard.writeText(data.password);
+        toast.success("Password copied to Clipboard!");
+
+    }
+
     return (
-        <div className=" bg-sky-100 flex flex-col gap-1 items-center py-5 overflow-x-auto">
+        <div className=" bg-sky-100 flex flex-col gap-1 items-center py-5 overflow-x-auto select-none">
 
             <div className='flex  w-1/2  sm:flex-row justify-around sm:gap-70 sm:w-full mt-20 mb-5 border-black '>
                 {/* <button onClick={handleLOGOUT}
@@ -236,7 +293,7 @@ const dashboard = () => {
                 {showProfile && user && (<div className="fixed inset-0 z-10  bg-cyan-950/50 " onClick={() => setShowProfile(false)} >
                     <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 
                  border-l border-cyan-500 p-6 " onClick={(e) => e.stopPropagation()} >
-                        <h2 className="text-2xl text-cyan-300 mb-4 flex flex-col items-center gap-4  "> User Profile
+                        <h2 className="text-2xl text-cyan-300 mb-4 flex flex-col items-center gap-4 font-extrabold  "> User Profile
                             <div className="w-20 h-20 rounded-full bg-cyan-500 flex items-center justify-center  text-3xl font-bold">
                                 {user.name[0].toUpperCase()}
                             </div>
@@ -244,7 +301,7 @@ const dashboard = () => {
                         <p className="text-white mt-12 border-b-1"> Name: {user.name}  </p>
                         <p className="text-white mt-4 border-b-1"> Email: {user.email} </p>
                         <p className="text-white mt-4 border-b-1"> Saved Passwords: {PasswordArray.length}</p>
-                        <button className="mt-15 w-full bg-red-500 py-2 rounded text-white text-xl" onClick={handleLOGOUT}  >
+                        <button className="mt-15 w-full bg-red-500 py-2 rounded text-white text-xl font-bold hover:cursor-pointer hover:bg-red-900  hover:scale-110 transition duration-300 ease-in-out " onClick={handleLOGOUT}  >
                             Logout
                         </button>
                     </div>
@@ -263,6 +320,7 @@ const dashboard = () => {
                 <input
                     type="text"
                     value={form.site}
+                     ref={inputRef}
                     onChange={handleIt}
                     placeholder="Enter Site Name/Link"
                     name="site"
@@ -281,8 +339,6 @@ const dashboard = () => {
                     <div className=" flex relative px- ">
                         <input
                             type={toggle ? "text" : "password"}
-                            ref={ref}
-                            id=" "
                             value={form.password}
                             onChange={handleIt}
                             name="password"
@@ -319,27 +375,26 @@ const dashboard = () => {
 
                     <button
                         onClick={hadleReset}
-                        className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-xl w-full max-w-50 sm:w-auto transition cursor-pointer hover:scale-105 transition duration-300 ease-in-out"
+                        className="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded-xl w-full max-w-50 sm:w-auto cursor-pointer hover:scale-105 transition duration-300 ease-in-out hover:font-bold"
                     >
                         Delete ALL
                     </button>
                 </div>
                 {PasswordArray.length == 0 && <div className="text-red-500 text-xl mx-auto p-4">No Saved Passwords !</div>}
                 {PasswordArray.length != 0 && (
-                    // <table className="border table-fixed sm:w-full w-1/2 ">
-                    <table className="border min-w-full overflow-x-auto ">
+                    <table className="w-full min-w-150 overflow-x-auto border-collapse">
                         <thead>
-                            <tr className="py-2 border border-white text-center text-cyan-800">
-                                <th className="py-2 border border-white text-center w-30 ">
+                            <tr className="border border-white text-center text-cyan-800">
+                                <th className="min-w-40 p-2 border border-white text-center w-30 ">
                                     Site Name
                                 </th>
-                                <th className="py-2 border border-white text-center w-30">
+                                <th className="min-w-25 p-2 border border-white text-center w-30">
                                     UserName
                                 </th>
-                                <th className="py-2 border border-white text-center w-30">
+                                <th className="min-w-45 p-2 border border-white text-center w-30">
                                     Password
                                 </th>
-                                <th className="py-2 border border-white text-center w-30">
+                                <th className="min-w-25 p-2 border border-white text-center w-30">
                                     Actions
                                 </th>
                             </tr>
@@ -348,15 +403,13 @@ const dashboard = () => {
                             {PasswordArray.map((items, index) => {
                                 return (
                                     <tr
-                                        className="py-2 border border-white text-center text-white "
+                                        className="border border-white text-center text-white ext-xs sm:text-sm "
                                         key={index}
                                     >
-                                        <td className="py-2 border border-white text-center w-30 relative sm:pr-10  ">
-
-
+                                        <td className="py-2 px-1 border border-white  relative pr-8 break-all">
                                             {items.site}
                                             <a
-                                                className="text-blue-900  absolute right-3 top-0 select-none cursor-pointer  "
+                                                className="text-blue-900  absolute right-1 top-1 select-none cursor-pointer  "
                                                 href={
                                                     items.site.startsWith("http://") ||
                                                         items.site.startsWith("https://")
@@ -369,10 +422,9 @@ const dashboard = () => {
                                                 {/* Open */}
                                                 <i className="bi bi-arrow-up-right-square"></i>
                                             </a>
-
-
                                         </td>
-                                        <td className="py-2 border border-white text-center w-30 relative  sm:pr-10 ">
+
+                                        <td className="py-2 px-1 border border-white relative pr-8 wrap-break-word">
                                             {items.name}
                                             <span
                                                 onClick={() => {
@@ -380,25 +432,43 @@ const dashboard = () => {
                                                     toast.success('Copied to Clipboard !');
                                                 }}
 
-                                                className="absolute right-3 top-0 select-none cursor-pointer text-blue-900 overflow-x-hidden  "
+                                                className="absolute right-1 top-1 select-none cursor-pointer text-blue-900 "
                                             >
                                                 {/* Copy */}
                                                 <i className="bi bi-copy"></i>
                                             </span>
                                         </td>
-                                        <td className="py-2 border border-white text-center w-30 relative pr-5 ">
-                                            {"*".repeat(items.password.length)}
-                                            <span
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(items.password)
-                                                    toast.success('Copied to Clipboard !');
-                                                }}
-                                                className="absolute right-3 top-0 select-none cursor-pointer text-blue-900  "
-                                            >
-                                                {/* Copy */}
-                                                <i className="bi bi-copy"></i>
 
-                                            </span>
+                                        {/* Passeword field Begins from here  */}
+
+                                        <td className="py-2 px-1 border border-white text-center min-w-45 relative">
+                                            <div className="flex items-center justify-center gap-2">
+
+                                                <span className='truncate max-w-30'>
+                                                    {revealedId === items._id ? revealedPass : "*".repeat(12)}
+                                                </span>
+                                                {/* Eye Icon */}
+                                                <button
+                                                    onClick={() => { revealPass(items._id) }}
+                                                    //     className="absolute right-10 top-1/3 -translate-y-1/2
+                                                    // cursor-pointer text-cyan-900"
+                                                    className="shrink-0 cursor-pointer text-cyan-900"
+
+                                                >
+                                                    <i
+                                                        className={revealedId === items._id ? "bi bi-eye-slash-fill" : "bi bi-eye-fill"}
+                                                    ></i>
+                                                </button>
+                                                {/* Copy Icon */}
+                                                <button
+                                                    onClick={() => { copyPass(items._id) }}
+                                                    // className="absolute right-3 top-0 select-none cursor-pointer text-blue-900  "
+                                                    className="shrink-0 cursor-pointer text-blue-900"
+                                                >
+                                                    <i className="bi bi-copy"></i>
+
+                                                </button>
+                                            </div>
                                         </td>
 
                                         <td className="py-2 border border-white text-center w-30">
@@ -429,4 +499,4 @@ const dashboard = () => {
 };
 
 
-export default dashboard
+export default dashboard;
