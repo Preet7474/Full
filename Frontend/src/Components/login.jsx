@@ -9,6 +9,7 @@ const LogInForm = ({ setShowRegister }) => {
 
     // const token = JSON.parse(localStorage.getItem("Token"));
     const navigate = useNavigate();
+    const API_URL = import.meta.env.VITE_API_URL;
 
     const [form, setform] = useState({ email: "", password: "" });
     const handleIt = (e) => {
@@ -17,7 +18,8 @@ const LogInForm = ({ setShowRegister }) => {
 
     const handleLogin = async (e) => {
 
-        const res = await fetch("http://localhost:4000/Login", {
+        // const res = await fetch("http://localhost:4000/Login", {
+        const res = await fetch(`${API_URL}/Login`, {
             method: "POST",
             credentials: "include",
             headers: {

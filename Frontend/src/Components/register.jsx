@@ -6,6 +6,7 @@ import { toast, Bounce } from "react-toastify";
 
 const RegisterForm = ({ setShowRegister }) => {
     const navigate = useNavigate();
+    const API_URL = import.meta.env.VITE_API_URL;
     const [form, setform] = useState({ name: "", email: "", password: "" });
     const handleIt = (e) => {
         setform({ ...form, [e.target.name]: e.target.value });
@@ -41,7 +42,7 @@ const RegisterForm = ({ setShowRegister }) => {
             return;
         }
 
-        const res = await fetch("http://localhost:4000/register", {
+        const res = await fetch(`${API_URL}/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

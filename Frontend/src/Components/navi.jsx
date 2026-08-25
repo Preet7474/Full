@@ -1,8 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const NavBarr = () => {
 
-  // bg-cyan-500  text-white
+  
   return (
     <nav className="fixed top-0 z-10 w-full h-16 bg-slate-900 border-b border-cyan-500/20 select-none">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-8 flex items-center justify-between">
@@ -21,12 +22,12 @@ const NavBarr = () => {
           </li>
 
           <li>
-            <a
-              href="http://localhost:5173/Login"
+            <Link
+              to="/Login"
               className="hover:text-cyan-500 "
             >
               Login
-            </a>
+            </Link>
           </li>
         </ul>
 

@@ -8,7 +8,7 @@ const Verifyotp = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [otp, setOtp] = useState("");
-    // const [otpPurpose, setOtpPurpose] = useState("")
+   const API_URL = import.meta.env.VITE_API_URL;
 
     const [timer, setTimer] = useState(30);
 
@@ -47,7 +47,7 @@ const Verifyotp = () => {
 
         // console.log("Email :",email);
 
-        const res = await fetch(`http://localhost:4000${endpoint}`, {
+        const res = await fetch(`${API_URL}${endpoint}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -82,7 +82,7 @@ const Verifyotp = () => {
         if (resendDisabled) return;
         setResendDisabled(true);
 
-        const res = await fetch("http://localhost:4000/resend-otp", {
+        const res = await fetch(`${API_URL}/resend-otp`, {
             method: "POST",
             credentials: "include",
             headers: {

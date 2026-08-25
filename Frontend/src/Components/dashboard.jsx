@@ -16,6 +16,7 @@ const dashboard = () => {
     const [user, setUser] = useState(null);
     const [revealedPass, setRevealedPass] = useState(null)
     const [revealedId, setRevealedId] = useState(null)
+    const API_URL = import.meta.env.VITE_API_URL;
 
     // const token = JSON.parse(localStorage.getItem("Token")); //Always Parse the token
 
@@ -50,13 +51,14 @@ const dashboard = () => {
         // console.log(loggedUser);
         //    console.log("Token is :",token)
 
-        const res = await fetch(`http://localhost:4000/ShowPasswords`, {
+        // const res = await fetch(`http://localhost:4000/ShowPasswords`, {
+        const res = await fetch(`${API_URL}/ShowPasswords`, {
             method: "GET",
             credentials: "include",
-            headers: {
+            // headers: {
                 // "Authorization": `Bearer ${token}`,
                 // "LoggeduserId": loggedUser._id   No Need As auth middleware is providing it
-            }
+            // }
         });
 
         const data = await res.json();
@@ -103,7 +105,8 @@ const dashboard = () => {
         // const loggedUser = JSON.parse(localStorage.getItem("LoggedUSER"));
         // console.log("User Ki Logged Id => \n\n", loggedUser);
 
-        const res = await fetch(`http://localhost:4000/add_password`, {
+        // const res = await fetch(`http://localhost:4000/add_password`, {
+        const res = await fetch(`${API_URL}/add_password`, {
             method: "POST",
             credentials: "include",
             headers: {
@@ -133,7 +136,8 @@ const dashboard = () => {
         const { _id, ...dataToSend } = form;
         // console.log(`_id :${_id}  \n\n Data to send : ${dataToSend}`)
 
-        const res = await fetch(`http://localhost:4000/edit_password/${id}`, {
+        // const res = await fetch(`http://localhost:4000/edit_password/${id}`, {
+        const res = await fetch(`${API_URL}/edit_password/${id}`, {
             method: "PUT",
             credentials: "include",
             headers: {
@@ -167,7 +171,8 @@ const dashboard = () => {
         //Removing Only The Deleted  On Which Cliked from Array
         setPasswordArray((p) => p.filter((i) => i._id !== id));
 
-        await fetch(`http://localhost:4000/del_password/${id}`, {
+        // await fetch(`http://localhost:4000/del_password/${id}`, {
+        await fetch(`${API_URL}/del_password/${id}`, {
             method: "DELETE",
             credentials: "include",
             headers: {
@@ -187,7 +192,8 @@ const dashboard = () => {
 
         const c = confirm("Are you sure You Want To Delete All Saved Passwords !")
         if (c) {
-            const res = await fetch(`http://localhost:4000/RESET`, {
+            // const res = await fetch(`http://localhost:4000/RESET`, {
+            const res = await fetch(`${API_URL}/RESET`, {
                 method: "DELETE",
                 credentials: 'include',
             });
@@ -205,7 +211,8 @@ const dashboard = () => {
     };
 
     const handleLOGOUT = async () => {
-        const res = await fetch('http://localhost:4000/LogOut', {
+        // const res = await fetch('http://localhost:4000/LogOut', {
+        const res = await fetch(`${API_URL}/LogOut`, {
             method: "GET",
             credentials: 'include',
             headers: {
@@ -223,7 +230,8 @@ const dashboard = () => {
     }
     const Userprofile = async () => {
         setShowProfile(true)
-        const val = await fetch('http://localhost:4000/Profile', {
+        // const val = await fetch('http://localhost:4000/Profile', {
+        const val = await fetch(`${API_URL}/Profile`, {
             method: "GET",
             credentials: 'include',
         })
@@ -244,7 +252,8 @@ const dashboard = () => {
             setRevealedPass(null);
             return;
         }
-        const res = await fetch(`http://localhost:4000/password/${id}/reveal`, {
+        // const res = await fetch(`http://localhost:4000/password/${id}/reveal`, {
+        const res = await fetch(`${API_URL}/password/${id}/reveal`, {
             method: "GET",
             credentials: "include"
         })
@@ -261,7 +270,8 @@ const dashboard = () => {
 
     const copyPass = async (id) => {
         const res = await fetch(
-            `http://localhost:4000/password/${id}/reveal`,
+            // `http://localhost:4000/password/${id}/reveal`,
+            `${API_URL}/password/${id}/reveal`,
             {
                 method: "GET",
                 credentials: "include"
@@ -298,9 +308,9 @@ const dashboard = () => {
                                 {user.name[0].toUpperCase()}
                             </div>
                         </h2>
-                        <p className="text-white mt-12 border-b-1"> Name: {user.name}  </p>
-                        <p className="text-white mt-4 border-b-1"> Email: {user.email} </p>
-                        <p className="text-white mt-4 border-b-1"> Saved Passwords: {PasswordArray.length}</p>
+                        <p className="text-white mt-12 border-b-b"> Name: {user.name}  </p>
+                        <p className="text-white mt-4 border-b-b"> Email: {user.email} </p>
+                        <p className="text-white mt-4 border-b-b"> Saved Passwords: {PasswordArray.length}</p>
                         <button className="mt-15 w-full bg-red-500 py-2 rounded text-white text-xl font-bold hover:cursor-pointer hover:bg-red-900  hover:scale-110 transition duration-300 ease-in-out " onClick={handleLOGOUT}  >
                             Logout
                         </button>
