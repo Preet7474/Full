@@ -16,9 +16,9 @@ const NavBarr = () => {
         {/* Navigation Links */}
         <ul className="flex items-center gap-4 sm:gap-8 text-sm sm:text-lg text-cyan-300">
           <li>
-            <a href="/" className="hover:text-cyan-500">
+            <Link to="/" className="hover:text-cyan-500">
               Home
-            </a>
+            </Link>
           </li>
 
           <li>

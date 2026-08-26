@@ -110,7 +110,7 @@ const Verifyotp = () => {
 
     return (
 
-        <div className='w-full h-screen border-2 flex flex-col justify-center items-center  
+        <div className='w-full min-h-full border-2 flex flex-col justify-center items-center  
          bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 '>
 
             <div className="border-2 mb-12 sm:w-95 w-70 backdrop-blur-md bg-cyan-950/30  border-cyan-400/30 rounded-3xl sm:p-6  p-10 shadow-[0_0_25px_rgba(34,211,238,0.4)] flex flex-col justify-center items-center gap-3 "

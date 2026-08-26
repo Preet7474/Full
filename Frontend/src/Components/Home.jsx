@@ -7,8 +7,9 @@ const Home = () => {
     return (
         <div>
 
-            <section className="min-h-[560px]  flex flex-col justify-center items-center 
-            bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 text-white sm:w-full w-118  sm:p-2 p-10 select-none ">
+            <section className="min-h-full w-full flex flex-col justify-center items-center 
+            bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 text-white sm:p-2 p-10 select-none ">
+   
 
                 <h1 className=" font-bold text-cyan-300 mb-4 sm:text-6xl  text-xl  ">
                     Epic_PassManager

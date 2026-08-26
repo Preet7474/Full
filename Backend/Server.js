@@ -22,7 +22,7 @@ app.use(express.json());
 // }));
 
 app.use(cors({
-    origin: "https://epic-passmanager.vercel.app",
+    origin: "https://epicpassmanager.vercel.app",
     credentials: true
 }));
 

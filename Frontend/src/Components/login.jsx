@@ -51,7 +51,7 @@ const LogInForm = ({ setShowRegister }) => {
 
     return (
 
-        <div className="max-w-8xl  h-full flex justify-center items-center bg-cover bg-center 
+        <div className="w-full  min-h-full flex justify-center items-center bg-cover bg-center 
 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 select-none" >
             <div className="text-center ">
                 <h1
