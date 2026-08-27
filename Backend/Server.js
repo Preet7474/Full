@@ -115,22 +115,22 @@ startServer();
 // console.log('Found documents =>', findResult); 
 
 //Middleware to verify the token 
+
+// const authHeader = req.headers.authorization;
+
+// if (!authHeader) {
+//     return res.status(401).json({ message: "No Token Provided " })
+// }
+// const token = authHeader.split(" ")[1];
+
+//Here By using cookies 
+
+// const token = req.cookies.Token || req.headers.authorization?.split(' ')[1];
+// console.log("Token from cookies => ", token);
+// console.log("Cookies =", req.cookies);
+// console.log("Headers =", req.headers.cookie);
+
 const auth = async (req, res, next) => {
-
-    // const authHeader = req.headers.authorization;
-
-    // if (!authHeader) {
-    //     return res.status(401).json({ message: "No Token Provided " })
-    // }
-    // const token = authHeader.split(" ")[1];
-
-    //Here By using cookies 
-
-    // const token = req.cookies.Token || req.headers.authorization?.split(' ')[1];
-    // console.log("Token from cookies => ", token);
-    // console.log("Cookies =", req.cookies);
-    // console.log("Headers =", req.headers.cookie);
-
     const token = req.cookies.Token;
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized ' });
@@ -461,7 +461,7 @@ app.post('/verify-Login', async (req, res) => {
         sameSite: isProduction ? "none" : "lax",
         maxAge: 24 * 60 * 60 * 1000
     });
-
+    console.log("Set-Cookie header:", res.getHeader("Set-Cookie"));
     console.log("Logged In Successfully", user)
     res.status(200).json({ message: "Logged In Successfully", user });
 
@@ -596,7 +596,7 @@ app.get('/LogOut', auth, async (req, res) => {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax"
-        
+
     });
     res.status(200).json({ message: 'User Logged Out Successfully' });
     console.log('User Logged Out Successfully');

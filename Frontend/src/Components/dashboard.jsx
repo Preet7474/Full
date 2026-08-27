@@ -58,7 +58,10 @@ const dashboard = () => {
             console.error("Fetch passwords failed:", data);
             return;
         }
-        setPasswordArray(data);
+        
+         if (Array.isArray(data)) {
+            setPasswordArray(data);
+        }
     };
 
     const SaveNow = async (e) => {
