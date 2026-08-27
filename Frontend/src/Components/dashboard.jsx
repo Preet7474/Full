@@ -288,9 +288,9 @@ const dashboard = () => {
     }
 
     return (
-        <div className=" bg-sky-100 flex flex-col gap-1 items-center py-5 overflow-x-auto select-none">
+        <div className=" bg-sky-100 flex flex-col gap-1 items-center  overflow-x-auto select-none">
 
-            <div className='flex  w-1/2  sm:flex-row justify-around sm:gap-70 sm:w-full mt-20 mb-5 border-black '>
+            <div className='flex  w-1/2  sm:flex-row justify-around sm:gap-70 sm:w-full mt-10 mb-5 border-black '>
                 {/* <button onClick={handleLOGOUT}
                     className='bg-cyan-400 p-3  mx-3  rounded-2xl text-white absolute right-2 top-0'>LogOut</button> */}
 

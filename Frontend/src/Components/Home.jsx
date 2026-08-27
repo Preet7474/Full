@@ -5,9 +5,8 @@ import { useNavigate} from 'react-router-dom'
 const Home = () => {
     const navigate = useNavigate();
     return (
-        <div>
-
-            <section className="min-h-full w-full flex flex-col justify-center items-center 
+        <div >
+            <section className="h-screen w-full flex flex-col justify-center items-center 
             bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 text-white sm:p-2 p-10 select-none ">
    
 

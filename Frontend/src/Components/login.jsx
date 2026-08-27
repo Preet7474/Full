@@ -51,29 +51,21 @@ const LogInForm = ({ setShowRegister }) => {
 
     return (
 
-        <div className="w-full  min-h-full flex justify-center items-center bg-cover bg-center 
+        <div className="w-full h-screen flex justify-center items-center bg-cover bg-center 
 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 select-none" >
             <div className="text-center ">
+
+                <form
+                    className="my-10 sm:w-95 w-70 backdrop-blur-md  bg-cyan-950/30 border border-cyan-400/30 rounded-3xl sm:p-6 px-10 py-3 shadow-[0_0_25px_rgba(34,211,238,0.4)] "  >
+
                 <h1
-                    className="sm:text-4xl text-2xl  font-bold mt-29 mb-7  text-cyan-300"
+                    className="sm:text-4xl text-2xl  font-bold  m-1.5  text-cyan-300"
                     style={{
                         textShadow: "0 0 10px #22d3ee, 0 0 20px #06b6d4",
                     }}
                 >
                     LogIn Here
                 </h1>
-
-                <form
-                    className=" mb-12
-       sm:w-95 w-70
-        backdrop-blur-md
-        bg-cyan-950/30
-        border
-        border-cyan-400/30
-        rounded-3xl
-        sm:p-6 px-10 py-3
-        shadow-[0_0_25px_rgba(34,211,238,0.4)]
-      "  >
 
                     <div className="mb-4">
                         <label

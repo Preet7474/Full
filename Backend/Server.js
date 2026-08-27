@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 4000;
+
 const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -62,7 +63,7 @@ const client = new MongoClient(process.env.Mongo_URI, {
 const dbName = 'Epic_PassManager';
 const db = client.db(dbName);
 
-async function run() {
+async function startServer() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
@@ -70,12 +71,17 @@ async function run() {
         // await client.db("Epic_PassManager").command({ ping: 1 });
         await db.command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
     }
+
+
 }
-run().catch(console.dir);
+startServer();
 
 
 // .finally(() => client.close());
@@ -131,8 +137,8 @@ const auth = async (req, res, next) => {
 
 // const LoggeduserID = req.headers.loggeduserid; 
 app.get('/ShowPasswords', auth, async (req, res) => {
-    
-    await client.connect();
+
+    // await client.connect();
     const collection = db.collection('passwords');
     const passwords = await collection.find({ userId: new ObjectId(req.user._id) }).toArray();
     res.json(passwords);
@@ -152,7 +158,7 @@ app.get('/ShowPasswords', auth, async (req, res) => {
 
 app.get('/password/:id/reveal', auth, async (req, res) => {
     const id = req.params.id;
-    await client.connect();
+    // await client.connect();
 
     const collection = db.collection('passwords');
     const data = await collection.findOne({
@@ -185,7 +191,7 @@ app.post('/add_password', auth, async (req, res) => {
     // console.log(req.headers);
     // console.log("ADD REQUEST BODY =", req.body);
 
-    await client.connect();
+    // await client.connect();
 
     const collection = db.collection('passwords');
     const encryptedPassword = CryptoJS.AES.encrypt(req.body.password, process.env.PASSWORD_SECRET).toString();
@@ -204,7 +210,7 @@ app.post('/add_password', auth, async (req, res) => {
 });
 
 app.delete('/del_password/:id', auth, async (req, res) => {
-    await client.connect();
+    // await client.connect();
     const collection = db.collection('passwords');
     const id = req.params.id;
     console.log("(Deleted Successfully)ID To Delete =>", id);
@@ -217,7 +223,7 @@ app.delete('/del_password/:id', auth, async (req, res) => {
 
 
 app.delete('/RESET', auth, async (req, res) => {
-   await client.connect();
+    // await client.connect();
 
     const collection = db.collection('passwords');
     console.log("Reset Successfull (User Id) :", req.user._id);
@@ -227,7 +233,7 @@ app.delete('/RESET', auth, async (req, res) => {
 })
 
 app.put('/edit_password/:id', auth, async (req, res) => {
-    await client.connect();
+    // await client.connect();
     const collection = db.collection('passwords');
     const id = req.params.id;
     // console.log(req.body)
@@ -264,12 +270,21 @@ app.put('/edit_password/:id', auth, async (req, res) => {
 app.post('/register', async (req, res) => {
 
     const { password, name, email } = req.body;
+
+    const normalizedEmail = email.trim().toLowerCase();
     //First Connect to Users Collection In DB
     const collection = db.collection('Users');
-    await client.connect();
+    // await client.connect();
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const isUserAlreadyExist = await collection.findOne({ email });
+    if (!emailRegex.test(normalizedEmail)) {
+        return res.status(400).json({
+            message: "Invalid email address"
+        });
+    }
+
+    const isUserAlreadyExist = await collection.findOne({ email:normalizedEmail });
 
     if (isUserAlreadyExist && isUserAlreadyExist.verified) {
         return res.status(409).json({ message: 'This EMAIL Already Exists !!!' })
@@ -285,7 +300,7 @@ app.post('/register', async (req, res) => {
     if (isUserAlreadyExist && !isUserAlreadyExist.verified) {
         // return res.status(409).json({ message: "Email already registered."   });
         //This is the Case When A User Uses Same Email To Register But That is'nt Verified
-        await collection.findOneAndUpdate({ email }, {
+        await collection.findOneAndUpdate({ email:normalizedEmail }, {
             $set: {
                 name,
                 password: hashedPass,
@@ -297,11 +312,13 @@ app.post('/register', async (req, res) => {
             }
         }, { returnDocument: 'after' }
         );
+
         return res.status(200).json({ message: "OTP Sent Successfully" });
     }
 
     const val = await collection.insertOne({
-        name, email,
+        name,
+        email:normalizedEmail,
         password: hashedPass,
         verified: false,
         Otp: otp,
@@ -311,11 +328,11 @@ app.post('/register', async (req, res) => {
         createdAt: new Date()
     });
 
-    const token = jwt.sign({ _id: val._id }, process.env.SECRET_Jwt, { expiresIn: '24h' })
+    const token = jwt.sign({ _id: val.insertedId }, process.env.SECRET_Jwt, { expiresIn: '24h' })
     console.log("User Registered Successfully:", val);
-    res.json({ user: val, token });
 
-    sendOtp(email, otp)
+    res.json({ user: val, token });
+    sendOtp(normalizedEmail, otp)
         .then(() => console.log("Registration OTP Sent"))
         .catch(err => console.error("Failed to send Sent Registration OTP:", err));
 
@@ -327,7 +344,7 @@ app.post('/Login', async (req, res) => {
 
     const { email, password } = req.body;
 
-    await client.connect();
+    // await client.connect();
 
     const db = client.db(dbName);
     const collection = db.collection('Users');
@@ -379,7 +396,7 @@ app.post('/Login', async (req, res) => {
 
 app.post('/verify-Login', async (req, res) => {
 
-    await client.connect();
+    // await client.connect();
 
     const collection = db.collection('Users');
 
@@ -428,7 +445,7 @@ app.post('/verify-Login', async (req, res) => {
 
 app.post('/resend-otp', async (req, res) => {
 
-    await client.connect();
+    // await client.connect();
     const collection = db.collection('Users');
 
 
@@ -478,7 +495,7 @@ app.post('/resend-otp', async (req, res) => {
 
 app.post('/verify-register', async (req, res) => {
 
-    await client.connect();
+    // await client.connect();
     const collection = db.collection('Users');
 
 
@@ -536,7 +553,7 @@ app.post('/verify-register', async (req, res) => {
 app.get('/Profile', auth, async (req, res) => {
 
     // const dbName = 'PassManager';  this i used in Local-MongoDB
-    await client.connect();
+    // await client.connect();
 
     const db = client.db(dbName);
     const collection = db.collection('Users');
@@ -548,7 +565,7 @@ app.get('/Profile', auth, async (req, res) => {
 })
 
 app.get('/LogOut', auth, async (req, res) => {
-    
+
     res.clearCookie('Token');
     res.status(200).json({ message: 'User Logged Out Successfully' });
     console.log('User Logged Out Successfully');
@@ -556,6 +573,3 @@ app.get('/LogOut', auth, async (req, res) => {
 })
 
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});

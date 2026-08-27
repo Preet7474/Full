@@ -47,7 +47,8 @@ const Verifyotp = () => {
 
         // console.log("Email :",email);
 
-        const res = await fetch(`${API_URL}${endpoint}`, {
+        const res = await fetch(`http://localhost:4000${endpoint}`, {
+        // const res = await fetch(`${API_URL}${endpoint}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -110,16 +111,11 @@ const Verifyotp = () => {
 
     return (
 
-        <div className='w-full min-h-full border-2 flex flex-col justify-center items-center  
+        <div className='h-screen border-2 flex flex-col justify-center items-center   
          bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 '>
 
-            <div className="border-2 mb-12 sm:w-95 w-70 backdrop-blur-md bg-cyan-950/30  border-cyan-400/30 rounded-3xl sm:p-6  p-10 shadow-[0_0_25px_rgba(34,211,238,0.4)] flex flex-col justify-center items-center gap-3 "
-
-            // <div className="border-2 p-10 rounded-3xl  bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-800 text-white 
-            // flex flex-col justify-center items-center gap-3  "
-
-            >
-
+            <div className="border-2 mb-12 sm:w-95 w-70 backdrop-blur-md bg-cyan-950/30  border-cyan-400/30 rounded-3xl sm:p-6  p-10 shadow-[0_0_25px_rgba(34,211,238,0.4)] flex flex-col justify-center items-center gap-3 "> 
+            
                 <h1 className="text-3xl mb-5 text-center text-cyan-300 font-bold"
                     style={{
                         textShadow: "0 0 10px #22d3ee, 0 0 20px #06b6d4",

@@ -9,13 +9,13 @@ import { ToastContainer, Bounce } from "react-toastify";
 function App() {
   return (
     <>
-      <div className="min-h-screen flex flex-col">
+      {/* <div className="min-h-screen flex flex-col"> */}
 
         <NavBarr />
 
-        <main className="flex-1">
+        {/* <main className="flex-1 "> */}
           <Outlet />
-        </main>
+        {/* </main> */}
 
         <Footer />
         
@@ -33,7 +33,7 @@ function App() {
           transition={Bounce}
         />
 
-      </div>
+      {/* </div> */}
     </>
   );
 }
