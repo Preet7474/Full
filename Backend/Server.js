@@ -131,7 +131,11 @@ startServer();
 // console.log("Headers =", req.headers.cookie);
 
 const auth = async (req, res, next) => {
-    const token = req.cookies.Token;
+
+
+    const token = req.cookies.Token; 
+    console.log("Cookies received:", req.cookies);
+    console.log("Token received:", !!req.cookies.Token);
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized ' });
     }
@@ -139,7 +143,7 @@ const auth = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.SECRET_Jwt);
         // console.log("Decoded Token :", decoded);
-
+        console.log("JWT verified successfully");
         req.user = decoded;
 
         next();
