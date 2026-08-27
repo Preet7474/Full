@@ -27,11 +27,8 @@ const dashboard = () => {
 
     useEffect(() => {
         fetchPass();
-        //  {PasswordAray.length() }
-
-        // const user = JSON.parse(localStorage.getItem("LoggedUSER"));
-
     }, []);
+
 
     useEffect(() => {
         if (editId) {
@@ -47,10 +44,6 @@ const dashboard = () => {
 
     const fetchPass = async () => {
 
-        // const loggedUser = JSON.parse(localStorage.getItem("LoggedUSER"));
-        // console.log(loggedUser);
-        //    console.log("Token is :",token)
-
         // const res = await fetch(`http://localhost:4000/ShowPasswords`, {
         const res = await fetch(`${API_URL}/ShowPasswords`, {
             method: "GET",
@@ -60,16 +53,12 @@ const dashboard = () => {
                 // "LoggeduserId": loggedUser._id   No Need As auth middleware is providing it
             // }
         });
-
         const data = await res.json();
+        if (!res.ok) {
+            console.error("Fetch passwords failed:", data);
+            return;
+        }
         setPasswordArray(data);
-
-        // if (!user) {
-        //     navigate("/login");
-        // }
-        // console.log(Array.isArray(data));
-        // console.log(data);
-        // console.log("All fetched Passwords =>", data)
     };
 
     const SaveNow = async (e) => {

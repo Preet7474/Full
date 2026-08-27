@@ -13,6 +13,8 @@ const cookieParser = require("cookie-parser");
 const CryptoJS = require("crypto-js");
 const sendOtp = require('./sendotp.js');
 
+const isProduction = process.env.NODE_ENV === "production";
+
 app.use(cookieParser());
 app.use(express.json());
 
@@ -22,8 +24,24 @@ app.use(express.json());
 //     credentials: true,
 // }));
 
+// app.use(cors({
+//     origin: "https://epicpassmanager.vercel.app",
+//     credentials: true
+// }));
+
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://epicpassmanager.vercel.app"
+];
+
 app.use(cors({
-    origin: "https://epicpassmanager.vercel.app",
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     credentials: true
 }));
 
@@ -109,11 +127,11 @@ const auth = async (req, res, next) => {
     //Here By using cookies 
 
     // const token = req.cookies.Token || req.headers.authorization?.split(' ')[1];
-    const token = req.cookies.Token;
     // console.log("Token from cookies => ", token);
     // console.log("Cookies =", req.cookies);
     // console.log("Headers =", req.headers.cookie);
 
+    const token = req.cookies.Token;
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized ' });
     }
@@ -284,7 +302,7 @@ app.post('/register', async (req, res) => {
         });
     }
 
-    const isUserAlreadyExist = await collection.findOne({ email:normalizedEmail });
+    const isUserAlreadyExist = await collection.findOne({ email: normalizedEmail });
 
     if (isUserAlreadyExist && isUserAlreadyExist.verified) {
         return res.status(409).json({ message: 'This EMAIL Already Exists !!!' })
@@ -300,7 +318,7 @@ app.post('/register', async (req, res) => {
     if (isUserAlreadyExist && !isUserAlreadyExist.verified) {
         // return res.status(409).json({ message: "Email already registered."   });
         //This is the Case When A User Uses Same Email To Register But That is'nt Verified
-        await collection.findOneAndUpdate({ email:normalizedEmail }, {
+        await collection.findOneAndUpdate({ email: normalizedEmail }, {
             $set: {
                 name,
                 password: hashedPass,
@@ -318,7 +336,7 @@ app.post('/register', async (req, res) => {
 
     const val = await collection.insertOne({
         name,
-        email:normalizedEmail,
+        email: normalizedEmail,
         password: hashedPass,
         verified: false,
         Otp: otp,
@@ -431,11 +449,17 @@ app.post('/verify-Login', async (req, res) => {
     const token = jwt.sign({ _id: user._id }, process.env.SECRET_Jwt, { expiresIn: '24h' })
     console.log("Token  :", token);
 
+    // res.cookie("Token", token, {
+    //     httpOnly: true,
+    //     secure: false,      // true when using HTTPS in production
+    //     maxAge: 24 * 60 * 60 * 1000 // 1 day
+    // });
+
     res.cookie("Token", token, {
         httpOnly: true,
-        secure: false,      // true when using HTTPS in production
-        sameSite: "lax",    // or "none" if frontend/backend are on different domains over HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 24 * 60 * 60 * 1000
     });
 
     console.log("Logged In Successfully", user)
@@ -566,7 +590,14 @@ app.get('/Profile', auth, async (req, res) => {
 
 app.get('/LogOut', auth, async (req, res) => {
 
-    res.clearCookie('Token');
+    // res.clearCookie('Token');
+
+    res.clearCookie("Token", {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax"
+        
+    });
     res.status(200).json({ message: 'User Logged Out Successfully' });
     console.log('User Logged Out Successfully');
 
