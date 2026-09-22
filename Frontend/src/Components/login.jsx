@@ -133,8 +133,11 @@ bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 select-none" >
                     >
                         LogIn
                     </button>
-                    <p className="text-cyan-400 mt-4">New User ?&nbsp;&nbsp;
-                        <button type="button" className="underline cursor-pointer"
+                    <button className="text-cyan-400 hover:text-cyan-300 mt-2 cursor-pointer underline font-bold" onClick={() => navigate('/forgot-password')}>
+                        Forgot Password ?
+                    </button>
+                    <p className="text-cyan-400 mt-2">New User ?&nbsp;&nbsp;
+                        <button type="button" className="underline cursor-pointer "
                             onClick={() => navigate('/register')}>Register Here</button></p>
                 </form>
             </div>

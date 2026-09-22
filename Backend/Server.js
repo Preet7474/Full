@@ -133,9 +133,9 @@ startServer();
 const auth = async (req, res, next) => {
 
 
-    const token = req.cookies.Token; 
-    console.log("Cookies received:", req.cookies);
-    console.log("Token received:", !!req.cookies.Token);
+    const token = req.cookies.Token;
+    // console.log("Cookies received:", req.cookies);
+    // console.log("Token received:", !!req.cookies.Token);
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized ' });
     }
@@ -317,7 +317,7 @@ app.post('/register', async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    console.log("Registration OTP Generated :", otp);
+    console.log("Registration OTP Generated & sent to user email");
 
     if (isUserAlreadyExist && !isUserAlreadyExist.verified) {
         // return res.status(409).json({ message: "Email already registered."   });
@@ -354,7 +354,7 @@ app.post('/register', async (req, res) => {
     console.log("User Registered Successfully:", val);
 
     res.json({ user: val, token });
-    sendOtp(normalizedEmail, otp)
+    sendOtp(normalizedEmail, otp, "register")
         .then(() => console.log("Registration OTP Sent"))
         .catch(err => console.error("Failed to send Sent Registration OTP:", err));
 
@@ -371,13 +371,20 @@ app.post('/Login', async (req, res) => {
     const db = client.db(dbName);
     const collection = db.collection('Users');
 
-    const user = await collection.findOne({ email });
-    console.log(user);
+    if(email.trim() === "" || password.trim() === "") {
+        return res.status(400).json({ message: "Please enter both email and password." });
+    }
+
+     const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await collection.findOne({ email: normalizedEmail });
+    // console.log(user);
     if (!user) {
         console.log("This User Does'nt Exists")
         return res.status(404).json({ message: " This User Does'nt Exists" })
     }
     const Matching = await bcrypt.compare(password, user.password);
+
     if (!Matching) {
         console.log("Incorrect Password");
         return res.status(401).json({ message: "Incorrect Password" })
@@ -391,7 +398,7 @@ app.post('/Login', async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    console.log("Login OTP Generated :", otp);
+    // console.log("Login OTP Generated :", otp);
 
     await collection.updateOne({ _id: user._id }, {
         $set: {
@@ -407,7 +414,7 @@ app.post('/Login', async (req, res) => {
     //    console.time("Send OTP");
     // await sendOtp(email, otp); Do'nt use this after sending the response
     // console.timeEnd("Send OTP");
-    sendOtp(email, otp)
+    sendOtp(email, otp, "login")
         .then(() => console.log("OTP Sent"))
         .catch(err => console.error("Failed to send resent OTP:", err));
 
@@ -451,7 +458,7 @@ app.post('/verify-Login', async (req, res) => {
 
     // Generate a new token for the user after successful OTP verification
     const token = jwt.sign({ _id: user._id }, process.env.SECRET_Jwt, { expiresIn: '24h' })
-    console.log("Token  :", token);
+    // console.log("Token  :", token);
 
     // res.cookie("Token", token, {
     //     httpOnly: true,
@@ -465,8 +472,8 @@ app.post('/verify-Login', async (req, res) => {
         sameSite: isProduction ? "none" : "lax",
         maxAge: 24 * 60 * 60 * 1000
     });
-    console.log("Set-Cookie header:", res.getHeader("Set-Cookie"));
-    console.log("Logged In Successfully", user)
+    // console.log("Set-Cookie header:", res.getHeader("Set-Cookie"));
+    console.log(user.name,"Logged In Successfully" )
     res.status(200).json({ message: "Logged In Successfully", user });
 
 })
@@ -477,16 +484,16 @@ app.post('/resend-otp', async (req, res) => {
     const collection = db.collection('Users');
 
 
-    const { email } = req.body;
+    const { email, purpose } = req.body;
     const user = await collection.findOne({ email });
     if (!user) {
         return res.status(404).json({ message: "If the Account exists, an OTP has been sent." });
     }
 
 
-    console.log("Now:", new Date());
-    console.log("Allowed:", user.resendAllowedAt);
-    console.log("Blocked:", new Date() < user.resendAllowedAt);
+    // console.log("Now:", new Date());
+    // console.log("Allowed:", user.resendAllowedAt);
+    // console.log("Blocked:", new Date() < user.resendAllowedAt);
 
     if (user.resendAllowedAt && new Date() < user.resendAllowedAt) {
 
@@ -501,20 +508,20 @@ app.post('/resend-otp', async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    console.log("OTP Generated :", otp);
+    console.log("Resend OTP Generated & sent to user email");
 
     await collection.updateOne({ _id: user._id }, {
         $set: {
             Otp: otp,
             OtpExpires: expiresAt,
-            Otp_Purpose: "login",
+            Otp_Purpose: purpose,
             resendAllowedAt: new Date(Date.now() + 30000) //for 30 seconds
         }
     });
 
     res.json({ message: "OTP Resent successfully" });
 
-    sendOtp(email, otp)
+    sendOtp(email, otp, purpose)
         .then(() => console.log("OTP Resent"))
         .catch(err => console.error("Failed to send resent OTP:", err));
 
@@ -525,16 +532,11 @@ app.post('/verify-register', async (req, res) => {
 
     // await client.connect();
     const collection = db.collection('Users');
-
-
     const { email } = req.body;
-    // console.log("Email :", email);
     const user = await collection.findOne({ email });
-    // console.log("User :", user);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
-
     if (user && !user.verified) {
         await collection.findOneAndUpdate({ _id: user._id }, {
             $set: {
@@ -575,6 +577,174 @@ app.post('/verify-register', async (req, res) => {
     );
     res.status(200).json({ message: "User Verified Successfully & is registered Now", user: user });
 
+});
+
+
+app.post('/changePassword', auth, async (req, res) => {
+
+    const collection = db.collection('Users');
+    const user = await collection.findOne({ _id: new ObjectId(req.user._id) });
+    if (req.body.form.currentPassword == "" || req.body.form.newPassword == "" || req.body.form.confirmPassword == "") {
+        return res.status(400).json({
+            message: "All fields are required"
+        });
+    }
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+    if (req.body.form.newPassword !== req.body.form.confirmPassword) {
+        return res.status(400).json({ message: "New Password and Confirm Password do not match" });
+    }
+    const isCurrentPasswordValid = await bcrypt.compare(req.body.form.currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+        return res.status(401).json({ message: "Current Password is Incorrect" });
+    }
+    if (req.body.form.newPassword.length < 8) {
+        return res.status(400).json({ message: "New Password must be at least 8 characters long" });
+    }
+    if (req.body.form.newPassword === req.body.form.currentPassword) {
+        return res.status(400).json({ message: "New Password cannot be the same as Current Password" });
+    }
+
+    const NewHashedPass = await bcrypt.hash(req.body.form.newPassword, 10);
+
+    await collection.updateOne({ _id: user._id },
+        { $set: { password: NewHashedPass } });
+    res.status(200).json({ message: "Password Changed Successfully", user: user });
+
+});
+
+app.post('/forgot-password', async (req, res) => {
+
+    const collection = db.collection('Users');
+    const { email } = req.body;
+
+    // const normalizedEmail = email.trim().toLowerCase();
+    const user = await collection.findOne({ email });
+
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    if(email === "") {
+        return res.status(400).json({ message: "Please enter the Email." });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await collection.updateOne({ _id: user._id }, {
+        $set: {
+            Otp: otp,
+            OtpExpires: expiresAt,
+            Otp_Purpose: "forgot-password",
+            resendAllowedAt: new Date(Date.now() + 30000) //for 30 seconds
+        }
+    });
+
+    res.json({ message: "OTP sent successfully" });
+
+    sendOtp(email, otp, "forgot")
+        .then(() => console.log("Forgot Password OTP Sent"))
+        .catch(err => console.error("Failed to send Forgot Password OTP:", err));
+
+
+});
+
+app.post('/verify-forgot', async (req, res) => {
+    const collection = db.collection('Users');
+    const { email, otp } = req.body;
+    const user = await collection.findOne({ email });
+    if (!user) {
+        return res.status(404).json({ message: "User not found !!!" });
+    }
+
+    if (user.Otp !== otp) {
+        return res.status(401).json({ message: "Invalid OTP" });
+    }
+
+    if (new Date() > user.OtpExpires) {
+        return res.status(401).json({ message: "OTP Expired" });
+    }
+    await collection.findOneAndUpdate({ _id: user._id }, {
+        $unset: {
+            Otp: "",
+            OtpExpires: "",
+            Otp_Purpose: "",
+            resendAllowedAt: ""
+        }
+    }, { returnDocument: 'after' });
+
+    // Creating a short-lived password-reset token
+    const resetToken = jwt.sign(
+        {
+            userId: user._id.toString(),
+            purpose: "password-reset"
+        },
+        process.env.SECRET_Jwt, {
+        expiresIn: "10m"
+    });
+    //send this token into cookies
+    res.cookie("PasswordResetToken", resetToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 10 * 60 * 1000
+    });
+    res.json({ message: "OTP verified successfully", });
+});
+
+
+app.post('/reset-password', async (req, res) => {
+
+    const resetToken = req.cookies.PasswordResetToken;
+
+    if (!resetToken) {
+        return res.status(401).json({ message: "No reset token provided" });
+    }
+
+    const collection = db.collection('Users');
+
+    const { newPassword, confirmPassword } = req.body.form;
+    try {
+        const decoded = jwt.verify(resetToken, process.env.SECRET_Jwt);
+
+        if (decoded.purpose !== "password-reset") {
+            return res.status(403).json({
+                message: "Invalid reset token"
+            });
+        }
+
+
+        const userId = new ObjectId(decoded.userId);
+
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
+        if (!user) {
+            return res.status(404).json({ message: "User not found !!!" });
+        }
+
+        // Do'nt fotget Validations here also !!!!!!
+        if (newPassword == "" || confirmPassword == "") {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: "New Password and Confirm Password do not match" });
+        }
+        if (newPassword.length < 8) {
+            return res.status(400).json({ message: "New Password must be at least 8 characters long" });
+        }
+
+        // update password here...
+        const NewHashedPass = await bcrypt.hash(newPassword, 10);
+
+        await collection.updateOne({ _id: userId },
+            { $set: { password: NewHashedPass } });
+        res.status(200).json({
+            message: "Password Reset successfully"
+        });
+    } catch (error) {
+        return res.status(401).json({ message: "Reset token expired or invalid" });
+    }
 });
 
 

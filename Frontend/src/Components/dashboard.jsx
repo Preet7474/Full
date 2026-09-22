@@ -49,8 +49,8 @@ const dashboard = () => {
             method: "GET",
             credentials: "include",
             // headers: {
-                // "Authorization": `Bearer ${token}`,
-                // "LoggeduserId": loggedUser._id   No Need As auth middleware is providing it
+            // "Authorization": `Bearer ${token}`,
+            // "LoggeduserId": loggedUser._id   No Need As auth middleware is providing it
             // }
         });
         const data = await res.json();
@@ -58,8 +58,8 @@ const dashboard = () => {
             console.error("Fetch passwords failed:", data);
             return;
         }
-        
-         if (Array.isArray(data)) {
+
+        if (Array.isArray(data)) {
             setPasswordArray(data);
         }
     };
@@ -279,6 +279,12 @@ const dashboard = () => {
 
     }
 
+    const handleChangePassword = () => {
+        navigate('/ChangePassword', {
+            state: { purpose: "changePassword" }
+        })
+    }
+
     return (
         <div className=" bg-sky-100 flex flex-col gap-1 items-center  overflow-x-auto select-none">
 
@@ -303,6 +309,9 @@ const dashboard = () => {
                         <p className="text-white mt-12 border-b-b"> Name: {user.name}  </p>
                         <p className="text-white mt-4 border-b-b"> Email: {user.email} </p>
                         <p className="text-white mt-4 border-b-b"> Saved Passwords: {PasswordArray.length}</p>
+                        <button className="text-white mt-4 border-b-b cursor-pointer underline font-bold    " onClick={handleChangePassword}>
+                            Change Password
+                        </button>
                         <button className="mt-15 w-full bg-red-500 py-2 rounded text-white text-xl font-bold hover:cursor-pointer hover:bg-red-900  hover:scale-110 transition duration-300 ease-in-out " onClick={handleLOGOUT}  >
                             Logout
                         </button>
@@ -322,7 +331,7 @@ const dashboard = () => {
                 <input
                     type="text"
                     value={form.site}
-                     ref={inputRef}
+                    ref={inputRef}
                     onChange={handleIt}
                     placeholder="Enter Site Name/Link"
                     name="site"

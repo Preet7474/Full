@@ -5,6 +5,8 @@ import Dashboard from "./Components/dashboard.jsx";
 import App from './App.jsx'
 import Home from "./Components/Home.jsx";
 import Verifyotp from "./Components/Verifyotp.jsx";
+import ChangePassword from "./Components/ChangePassword.jsx";
+import ForgotPass from "./Components/ForgotPass.jsx";
 
 const routes = createBrowserRouter([
   {
@@ -28,8 +30,16 @@ const routes = createBrowserRouter([
         element: <Dashboard />
       },
       {
-        path:"verify-otp",
-        element: <Verifyotp/>
+        path: "verify-otp",
+        element: <Verifyotp />
+      }, 
+      {
+        path:"/changePassword",
+        element:<ChangePassword/>
+      },
+      {
+        path:"/forgot-password",
+        element:<ForgotPass/>
       }
       // ,
       // {
