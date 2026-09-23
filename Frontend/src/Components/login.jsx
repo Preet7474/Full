@@ -19,6 +19,13 @@ const LogInForm = ({ setShowRegister }) => {
     const handleLogin = async (e) => {
 
         // const res = await fetch("http://localhost:4000/Login", {
+
+        setform({ email: form.email.trim().toLowerCase(), password: form.password });
+        if (form.email.trim() === "" || form.password.trim() === "") {
+            toast.error("Please fill all the fields.");
+            return;
+        }
+
         const res = await fetch(`${API_URL}/Login`, {
             method: "POST",
             credentials: "include",
@@ -31,11 +38,9 @@ const LogInForm = ({ setShowRegister }) => {
         const LoggedUser = await res.json();
         setform({ email: "", password: "" });
         if (!res.ok) {
-            // alert(LoggedUser.message);
             toast.error(LoggedUser.message);
             return;
         }
-
         if (res.ok) {
             toast.success('Otp Sent Successfully !');
             navigate("/verify-otp", {
@@ -58,14 +63,14 @@ bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 select-none" >
                 <form
                     className="my-10 sm:w-95 w-70 backdrop-blur-md  bg-cyan-950/30 border border-cyan-400/30 rounded-3xl sm:p-6 px-10 py-3 shadow-[0_0_25px_rgba(34,211,238,0.4)] "  >
 
-                <h1
-                    className="sm:text-4xl text-2xl  font-bold  m-1.5  text-cyan-300"
-                    style={{
-                        textShadow: "0 0 10px #22d3ee, 0 0 20px #06b6d4",
-                    }}
-                >
-                    LogIn Here
-                </h1>
+                    <h1
+                        className="sm:text-4xl text-2xl  font-bold  m-1.5  text-cyan-300"
+                        style={{
+                            textShadow: "0 0 10px #22d3ee, 0 0 20px #06b6d4",
+                        }}
+                    >
+                        LogIn Here
+                    </h1>
 
                     <div className="mb-4">
                         <label

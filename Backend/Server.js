@@ -398,7 +398,7 @@ app.post('/Login', async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    // console.log("Login OTP Generated :", otp);
+    console.log("Login OTP Generated & sent to user email");
 
     await collection.updateOne({ _id: user._id }, {
         $set: {
@@ -408,7 +408,7 @@ app.post('/Login', async (req, res) => {
             resendAllowedAt: new Date(Date.now() + 30000)  //for 30 seconds
         }
     });
-    //res.json line must be here for immediate Redirextion of user to verify OTP page after sending OTP to user email
+    //res.json line must be here for immediate Redirection of user to verify OTP page after sending OTP to user email
     res.json({ message: "OTP sent successfully" });
 
     //    console.time("Send OTP");
@@ -426,14 +426,12 @@ app.post('/Login', async (req, res) => {
 app.post('/verify-Login', async (req, res) => {
 
     // await client.connect();
-
     const collection = db.collection('Users');
 
     const { email } = req.body;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // console.log("Fetch to /verify-Login Request Hiting properly")
-
-    const user = await collection.findOne({ email });
+    const user = await collection.findOne({ email: normalizedEmail });
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
@@ -533,7 +531,9 @@ app.post('/verify-register', async (req, res) => {
     // await client.connect();
     const collection = db.collection('Users');
     const { email } = req.body;
-    const user = await collection.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await collection.findOne({ email: normalizedEmail });
+
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
@@ -617,8 +617,8 @@ app.post('/changePassword', auth, async (req, res) => {
 app.post('/forgot-password', async (req, res) => {
 
     const collection = db.collection('Users');
+    //Note : this Email is Already Noermalized So No NEED to Normalize it Again
     const { email } = req.body;
-
     // const normalizedEmail = email.trim().toLowerCase();
     const user = await collection.findOne({ email });
 
@@ -654,7 +654,10 @@ app.post('/forgot-password', async (req, res) => {
 app.post('/verify-forgot', async (req, res) => {
     const collection = db.collection('Users');
     const { email, otp } = req.body;
+
+
     const user = await collection.findOne({ email });
+
     if (!user) {
         return res.status(404).json({ message: "User not found !!!" });
     }
@@ -722,7 +725,7 @@ app.post('/reset-password', async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found !!!" });
         }
-
+        
         // Do'nt fotget Validations here also !!!!!!
         if (newPassword == "" || confirmPassword == "") {
             return res.status(400).json({ message: "All fields are required" });
