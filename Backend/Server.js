@@ -371,11 +371,11 @@ app.post('/Login', async (req, res) => {
     const db = client.db(dbName);
     const collection = db.collection('Users');
 
-    if(email.trim() === "" || password.trim() === "") {
+    if (email.trim() === "" || password.trim() === "") {
         return res.status(400).json({ message: "Please enter both email and password." });
     }
 
-     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     const user = await collection.findOne({ email: normalizedEmail });
     // console.log(user);
@@ -471,7 +471,7 @@ app.post('/verify-Login', async (req, res) => {
         maxAge: 24 * 60 * 60 * 1000
     });
     // console.log("Set-Cookie header:", res.getHeader("Set-Cookie"));
-    console.log(user.name,"Logged In Successfully" )
+    console.log(user.name, "Logged In Successfully")
     res.status(200).json({ message: "Logged In Successfully", user });
 
 })
@@ -626,7 +626,7 @@ app.post('/forgot-password', async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    if(email === "") {
+    if (email === "") {
         return res.status(400).json({ message: "Please enter the Email." });
     }
 
@@ -725,7 +725,7 @@ app.post('/reset-password', async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found !!!" });
         }
-        
+
         // Do'nt fotget Validations here also !!!!!!
         if (newPassword == "" || confirmPassword == "") {
             return res.status(400).json({ message: "All fields are required" });
@@ -777,6 +777,60 @@ app.get('/LogOut', auth, async (req, res) => {
     });
     res.status(200).json({ message: 'User Logged Out Successfully' });
     console.log('User Logged Out Successfully');
+
+})
+
+app.delete('/Delete-Account', auth, async (req, res) => {
+
+    const users = db.collection('Users');
+    const passwords = db.collection('passwords');
+
+    const userId = new ObjectId(req.user._id);
+
+    const user = await users.findOne({ _id: userId });
+
+    if (!user) {
+        return res.status(404).json({ message: "!!! User Account not found !!!" });
+    }
+
+    const { currentPassword } = req.body;
+    if (!currentPassword) {
+        return res.status(400).json({
+            message: "Current password is required"
+        });
+    }
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!passwordMatch) {
+        return res.status(401).json({
+            message: "Incorrect password"
+        });
+    }
+
+
+
+    const deletedpass = await passwords.deleteMany({ userId: userId })
+
+    const userResult = await users.deleteOne({
+        _id: userId
+    });
+
+    if (userResult.deletedCount !== 1) {
+        return res.status(500).json({
+            message: "Failed to delete account"
+        });
+    }
+
+    res.clearCookie("Token", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax"
+    });
+
+    res.json({
+        message: "Account deleted successfully",
+        deletedPasswords: deletedpass.deletedCount
+    });
+
 
 })
 

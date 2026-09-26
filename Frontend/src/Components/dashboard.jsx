@@ -16,6 +16,9 @@ const dashboard = () => {
     const [user, setUser] = useState(null);
     const [revealedPass, setRevealedPass] = useState(null)
     const [revealedId, setRevealedId] = useState(null)
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
     const API_URL = import.meta.env.VITE_API_URL;
 
     // const token = JSON.parse(localStorage.getItem("Token")); //Always Parse the token
@@ -285,6 +288,40 @@ const dashboard = () => {
         })
     }
 
+
+    const handleDeleteAccount = async () => {
+
+        if (!currentPassword) {
+            toast.error("Enter your current password.");
+            return;
+        }
+
+        const res = await fetch(`${API_URL}/Delete-Account`,
+            {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({ currentPassword })
+            }
+        );
+
+        if (res.status === 401){
+            toast.error("Password Does'nt Match! Wrong Password")
+            return;
+        }
+
+        if (!res.ok) {
+            toast.error(data.message);
+            return;
+        }
+
+        toast.success("Account deleted successfully.");
+        navigate("/Login");
+
+    }
+
     return (
         <div className=" bg-sky-100 flex flex-col gap-1 items-center  overflow-x-auto select-none">
 
@@ -299,9 +336,9 @@ const dashboard = () => {
                 </button>
 
                 {showProfile && user && (<div className="fixed inset-0 z-10  bg-cyan-950/50 " onClick={() => setShowProfile(false)} >
-                    <div className="absolute right-0 top-0 h-full w-80 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 
+                    <div className="absolute right-0  top-0 h-full w-80 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 
                  border-l border-cyan-500 p-6 " onClick={(e) => e.stopPropagation()} >
-                        <h2 className="text-2xl text-cyan-300 mb-4 flex flex-col items-center gap-4 font-extrabold  "> User Profile
+                        <h2 className="text-2xl mt-15 text-cyan-300 mb-4 flex flex-col items-center gap-4 font-extrabold  "> User Profile
                             <div className="w-20 h-20 rounded-full bg-cyan-500 flex items-center justify-center  text-3xl font-bold">
                                 {user.name[0].toUpperCase()}
                             </div>
@@ -309,12 +346,63 @@ const dashboard = () => {
                         <p className="text-white mt-12 border-b-b"> Name: {user.name}  </p>
                         <p className="text-white mt-4 border-b-b"> Email: {user.email} </p>
                         <p className="text-white mt-4 border-b-b"> Saved Passwords: {PasswordArray.length}</p>
-                        <button className="text-white mt-4 border-b-b cursor-pointer underline font-bold    " onClick={handleChangePassword}>
-                            Change Password
-                        </button>
-                        <button className="mt-15 w-full bg-red-500 py-2 rounded text-white text-xl font-bold hover:cursor-pointer hover:bg-red-900  hover:scale-110 transition duration-300 ease-in-out " onClick={handleLOGOUT}  >
+                        <div>
+
+                            <button className="text-white text-xl mt-4 border-b-b cursor-pointer underline font-bold 
+                        hover:scale-110 transition duration-300 ease-in-out   " onClick={handleChangePassword}>
+                                Change Password
+                            </button>
+                        </div>
+
+                        <button className="mt-1  py-2 rounded text-white text-xl underline font-bold hover:cursor-pointer  hover:scale-110 transition duration-300 ease-in-out " onClick={handleLOGOUT}  >
                             Logout
                         </button>
+
+                        <div className='flex items-center justify-center'>
+                            <button
+                                onClick={() => setShowDeleteModal(true)}
+                                className="bg-red-600 hover:bg-red-800 hover:cursor-pointer  hover:scale-110 transition duration-300 ease-in-out text-white font-bold px-4 py-2 mt-5 rounded-lg"
+                            >
+                                Delete Account
+                            </button>
+                        </div>
+
+                        {showDeleteModal && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+                                <div className="w-full max-w-sm rounded-xl bg-slate-900 p-6 shadow-2xl">
+                                    <h2 className="text-2xl font-bold text-red-500 text-center"> Delete Account </h2>
+                                    <p className="mt-3 text-sm text-gray-300 text-center">
+                                        This will permanently delete your account and all
+                                        your saved passwords. </p>
+                                    <label className="block mt-6 mb-2 text-sm text-gray-200">
+                                        Enter your current password </label>
+                                    <input
+                                        type="password"
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                        placeholder="Current password"
+                                        className="w-full rounded-lg bg-slate-800 border border-gray-600
+                           px-4 py-2 text-white outline-none focus:border-cyan-400" />
+                                    <div className="flex gap-3 mt-6">
+                                        <button
+                                            onClick={() => {
+                                                setShowDeleteModal(false);
+                                                setCurrentPassword("");
+                                            }}
+                                            className="flex-1 rounded-lg bg-gray-600 hover:bg-gray-700 py-2 text-white cursor-pointer"> Cancel
+                                        </button>
+
+                                        <button
+                                            onClick={handleDeleteAccount}
+                                            className="flex-1 rounded-lg bg-red-600 hover:bg-red-700 py-2 text-white cursor-pointer" >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+
                     </div>
                 </div>
                 )
